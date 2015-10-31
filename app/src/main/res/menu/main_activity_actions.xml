@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+   >
+    <!-- Search, should appear as action button -->
+    <item android:id="@+id/take_photo"
+        android:icon="@drawable/ic_photo_camera_white_24dp"
+        android:title="@string/take_photo"
+        app:showAsAction="ifRoom" />
+    <!-- Settings, should always be in the overflow -->
+
+</menu>

@@ -1,9 +1,11 @@
 package com.fanfan.pub.myapplication;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +20,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private ImageView mImageView;
@@ -46,11 +50,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private float smallBrush, mediumBrush, largeBrush;
 
 
-    private ImageButton currPaint, drawBtn, eraseBtn;; // paint color button in the palette
+    private ImageButton currPaint, drawBtn, eraseBtn, newBtn, saveBtn; // paint color button in the palette
+
+    private ImageButton takePhoto;
 
 
-
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity_actions, menu);
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,12 +79,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         smallBrush = getResources().getInteger(R.integer.small_size);
         mediumBrush = getResources().getInteger(R.integer.medium_size);
         largeBrush = getResources().getInteger(R.integer.large_size);
+
         drawBtn = (ImageButton)findViewById(R.id.draw_btn);
         drawBtn.setOnClickListener(this);
 
         eraseBtn = (ImageButton)findViewById(R.id.erase_btn);
         eraseBtn.setOnClickListener(this);
-        //return view;
+
+        newBtn = (ImageButton)findViewById(R.id.new_btn);
+        newBtn.setOnClickListener(this);
+
+        saveBtn = (ImageButton)findViewById(R.id.save_btn);
+        saveBtn.setOnClickListener(this);
+
+
     }
     @Override
     public void onClick(View view) {
@@ -90,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             smallBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    drawView.setErase(false);
                     drawView.setBrushSize(smallBrush);
                     drawView.setLastBrushSize(smallBrush);
                     brushDialog.dismiss();
@@ -100,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mediumBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    drawView.setErase(false);
                     drawView.setBrushSize(mediumBrush);
                     drawView.setLastBrushSize(mediumBrush);
                     brushDialog.dismiss();
@@ -110,16 +129,116 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             largeBtn.setOnClickListener(new OnClickListener(){
                 @Override
                 public void onClick(View v) {
+                    drawView.setErase(false);
                     drawView.setBrushSize(largeBrush);
                     drawView.setLastBrushSize(largeBrush);
                     brushDialog.dismiss();
                 }
             });
         }
+        //when the eraser been selected
+        else if(view.getId()==R.id.erase_btn){
+            final Dialog brushDialog = new Dialog(this);
+            brushDialog.setTitle("Eraser size:");
+            brushDialog.setContentView(R.layout.brush_chooser);
+            brushDialog.show();
+
+            ImageButton smallBtn = (ImageButton)brushDialog.findViewById(R.id.small_brush);
+            smallBtn.setOnClickListener(new OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    drawView.setErase(true);
+                    drawView.setBrushSize(smallBrush);
+                    brushDialog.dismiss();
+                }
+            });
+            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
+            mediumBtn.setOnClickListener(new OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    drawView.setErase(true);
+                    drawView.setBrushSize(mediumBrush);
+                    brushDialog.dismiss();
+                }
+            });
+            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
+            largeBtn.setOnClickListener(new OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    drawView.setErase(true);
+                    drawView.setBrushSize(largeBrush);
+                    brushDialog.dismiss();
+                }
+            });
+            //switch to erase - choose size
+        }
+        //new button
+        else if(view.getId()==R.id.new_btn){
+
+
+            AlertDialog.Builder newDialog = new AlertDialog.Builder(this);
+            newDialog.setTitle("New drawing");
+            newDialog.setMessage("Start new drawing (you will lose the current drawing)?");
+            newDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    drawView.startNew();
+                    dialog.dismiss();
+                }
+            });
+            newDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    dialog.cancel();
+                }
+            });
+            newDialog.show();
+        }
+        //save drawing
+        else if(view.getId()==R.id.save_btn){
+
+            AlertDialog.Builder saveDialog = new AlertDialog.Builder(this);
+            saveDialog.setTitle("Save drawing");
+            saveDialog.setMessage("Save drawing to device Gallery?");
+            saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    drawView.setDrawingCacheEnabled(true);
+                    String imgSaved = MediaStore.Images.Media.insertImage(
+                            getContentResolver(), drawView.getDrawingCache(),
+                            UUID.randomUUID().toString()+".png", "drawing");
+                    if(imgSaved!=null){
+                        Toast savedToast = Toast.makeText(getApplicationContext(),
+                                "Drawing saved to Gallery!", Toast.LENGTH_SHORT);
+                        savedToast.show();
+                    }
+                    else{
+                        Toast unsavedToast = Toast.makeText(getApplicationContext(),
+                                "Oops! Image could not be saved.", Toast.LENGTH_SHORT);
+                        unsavedToast.show();
+                    }
+                    drawView.destroyDrawingCache();
+                    //save drawing
+                }
+            });
+            saveDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    dialog.cancel();
+                }
+            });
+            saveDialog.show();
+        }
+        else if (view.getId()== R.id.take_photo){
+            dispatchTakePictureIntent();
+        }
+
 
     //respond to clicks
     }
 
+    @Override
+    protected void onStart() {
+      /*  takePhoto = (ImageButton)findViewById((R.id.take_photo));
+        takePhoto.setOnClickListener(this);*/
+        super.onStart();
+    }
 
     public void paintClicked(View view){
         //use chosen color
@@ -130,15 +249,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             imgView.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
             currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
             currPaint=(ImageButton)view;
+            drawView.setErase(false);
+            drawView.setBrushSize(drawView.getLastBrushSize());
         }
-        else if(view.getId()==R.id.erase_btn){
-            final Dialog brushDialog = new Dialog(this);
-            brushDialog.setTitle("Eraser size:");
-            brushDialog.setContentView(R.layout.brush_chooser);
-            //switch to erase - choose size
-        }
-
-
     }
 
     public void shoot(View view){
@@ -195,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
-        //if (bitmap != null) new DrawingView(this).onDraw(bitmap);
+        if (bitmap != null) drawView.startWithNewPic(bitmap);
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -216,7 +329,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /*if (data!=null){
             handleSmallCameraPhoto(data);
         }*/
-
         galleryAddPic();
             //Bitmap fullPic = handleFullCameraPhoto(data);
         super.onActivityResult(requestCode, resultCode, data);

@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -18,7 +19,6 @@ import android.view.View;
  * Created by student on 15-10-22.
  */
 public class DrawingView extends View {
-
     //drawing path
     private Path drawPath;
     //drawing and canvas paint
@@ -30,7 +30,7 @@ public class DrawingView extends View {
     //canvas bitmap
     private Bitmap canvasBitmap;
     private float brushSize, lastBrushSize; //brush size  && keep track of the last brush size
-    private boolean erase=false; //check if user is ereasing or not
+    private boolean erase=false; //check if user is erasing or not
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         brushSize = getResources().getInteger(R.integer.medium_size);
@@ -43,8 +43,6 @@ public class DrawingView extends View {
                 newSize, getResources().getDisplayMetrics());
         brushSize=pixelAmount;
         drawPaint.setStrokeWidth(brushSize);
-
-
     }
     public void setLastBrushSize(float lastSize){
         lastBrushSize=lastSize;
@@ -53,21 +51,35 @@ public class DrawingView extends View {
         return lastBrushSize;
     }
     private void setupDrawing() {
-
         drawPath = new Path();
         drawPaint = new Paint();
         drawPaint.setColor(paintColor);
-
         //set the initial path properties
-
         drawPaint.setAntiAlias(true);
         drawPaint.setStrokeWidth(20);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvasPaint = new Paint(Paint.DITHER_FLAG);
-
     }
+    public void startNew(){
+        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        invalidate();
+    }
+    public void startWithNewPic(Bitmap bMap){
+        int heigh = bMap.getHeight();
+        int width = bMap.getWidth();
+        //get the dimension of pic and frame
+        Rect po = new Rect(0,0,width,heigh);
+        Rect dst = new Rect(0,0,canvasBitmap.getWidth(),canvasBitmap.getHeight());
+        drawCanvas.drawBitmap(bMap,po,dst, canvasPaint);
+        invalidate();
+
+        //invalidate();
+    }
+
+
+
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -82,7 +94,7 @@ public class DrawingView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-//draw view
+        //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
     }
