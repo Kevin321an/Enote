@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,11 +39,12 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private ImageView mImageView;
-    private  static Bitmap mImageBitmap;
+    private static Bitmap mImageBitmap;
 
     public static Bitmap getmImageBitmap() {
         return mImageBitmap;
     }
+
     String mCurrentPhotoPath;
     static final int REQUEST_TAKE_PHOTO = 1;
 
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton currPaint, drawBtn, eraseBtn, newBtn, saveBtn; // paint color button in the palette
 
     private ImageButton takePhoto;
+    private String result; //text for adding into the comment field
 
 
     @Override
@@ -68,11 +71,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Intent mIntent = new Intent(this, com.fanfan.pub.mylibrary.MainActivity.class);
         //startActivity(mIntent);
 //        View view = inflater.inflate(R.layout.testclassfragment, container, false);
-        mImageView = (ImageView)findViewById(R.id.photo);
-        drawView = (DrawingView)findViewById(R.id.drawing);
+        mImageView = (ImageView) findViewById(R.id.photo);
+        drawView = (DrawingView) findViewById(R.id.drawing);
         //get the first button from the palette
-        LinearLayout paintLayout = (LinearLayout)findViewById(R.id.paint_colors);
-        currPaint = (ImageButton)paintLayout.getChildAt(0);
+        LinearLayout paintLayout = (LinearLayout) findViewById(R.id.paint_colors);
+        currPaint = (ImageButton) paintLayout.getChildAt(0);
         //use the diff color to show the item been selected
         currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
 
@@ -80,23 +83,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediumBrush = getResources().getInteger(R.integer.medium_size);
         largeBrush = getResources().getInteger(R.integer.large_size);
 
-        drawBtn = (ImageButton)findViewById(R.id.draw_btn);
+        drawBtn = (ImageButton) findViewById(R.id.draw_btn);
         drawBtn.setOnClickListener(this);
 
-        eraseBtn = (ImageButton)findViewById(R.id.erase_btn);
+        eraseBtn = (ImageButton) findViewById(R.id.erase_btn);
         eraseBtn.setOnClickListener(this);
 
-        newBtn = (ImageButton)findViewById(R.id.new_btn);
+        newBtn = (ImageButton) findViewById(R.id.new_btn);
         newBtn.setOnClickListener(this);
 
-        saveBtn = (ImageButton)findViewById(R.id.save_btn);
+        saveBtn = (ImageButton) findViewById(R.id.save_btn);
         saveBtn.setOnClickListener(this);
 
 
     }
+
     @Override
     public void onClick(View view) {
-        if (view.getId()==R.id.draw_btn){
+        if (view.getId() == R.id.draw_btn) {
             //draw button clicked
             final Dialog brushDialog = new Dialog(this);
             brushDialog.setTitle("Brush size:");
@@ -114,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
 
-            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
+            ImageButton mediumBtn = (ImageButton) brushDialog.findViewById(R.id.medium_brush);
             mediumBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -125,8 +129,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
 
-            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
-            largeBtn.setOnClickListener(new OnClickListener(){
+            ImageButton largeBtn = (ImageButton) brushDialog.findViewById(R.id.large_brush);
+            largeBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(false);
@@ -137,14 +141,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         }
         //when the eraser been selected
-        else if(view.getId()==R.id.erase_btn){
+        else if (view.getId() == R.id.erase_btn) {
             final Dialog brushDialog = new Dialog(this);
             brushDialog.setTitle("Eraser size:");
             brushDialog.setContentView(R.layout.brush_chooser);
             brushDialog.show();
 
-            ImageButton smallBtn = (ImageButton)brushDialog.findViewById(R.id.small_brush);
-            smallBtn.setOnClickListener(new OnClickListener(){
+            ImageButton smallBtn = (ImageButton) brushDialog.findViewById(R.id.small_brush);
+            smallBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(true);
@@ -152,8 +156,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     brushDialog.dismiss();
                 }
             });
-            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
-            mediumBtn.setOnClickListener(new OnClickListener(){
+            ImageButton mediumBtn = (ImageButton) brushDialog.findViewById(R.id.medium_brush);
+            mediumBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(true);
@@ -161,8 +165,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     brushDialog.dismiss();
                 }
             });
-            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
-            largeBtn.setOnClickListener(new OnClickListener(){
+            ImageButton largeBtn = (ImageButton) brushDialog.findViewById(R.id.large_brush);
+            largeBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(true);
@@ -173,43 +177,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //switch to erase - choose size
         }
         //new button
-        else if(view.getId()==R.id.new_btn){
+        else if (view.getId() == R.id.new_btn) {
 
 
             AlertDialog.Builder newDialog = new AlertDialog.Builder(this);
             newDialog.setTitle("New drawing");
             newDialog.setMessage("Start new drawing (you will lose the current drawing)?");
-            newDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
+            newDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
                     drawView.startNew();
                     dialog.dismiss();
                 }
             });
-            newDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
+            newDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
                 }
             });
             newDialog.show();
         }
         //save drawing
-        else if(view.getId()==R.id.save_btn){
+        else if (view.getId() == R.id.save_btn) {
 
             AlertDialog.Builder saveDialog = new AlertDialog.Builder(this);
             saveDialog.setTitle("Save drawing");
             saveDialog.setMessage("Save drawing to device Gallery?");
-            saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
+            saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
                     drawView.setDrawingCacheEnabled(true);
                     String imgSaved = MediaStore.Images.Media.insertImage(
                             getContentResolver(), drawView.getDrawingCache(),
-                            UUID.randomUUID().toString()+".png", "drawing");
-                    if(imgSaved!=null){
+                            UUID.randomUUID().toString() + ".png", "drawing");
+                    if (imgSaved != null) {
                         Toast savedToast = Toast.makeText(getApplicationContext(),
                                 "Drawing saved to Gallery!", Toast.LENGTH_SHORT);
                         savedToast.show();
-                    }
-                    else{
+                    } else {
                         Toast unsavedToast = Toast.makeText(getApplicationContext(),
                                 "Oops! Image could not be saved.", Toast.LENGTH_SHORT);
                         unsavedToast.show();
@@ -218,19 +221,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //save drawing
                 }
             });
-            saveDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int which){
+            saveDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
                 }
             });
             saveDialog.show();
-        }
-        else if (view.getId()== R.id.take_photo){
+        } else if (view.getId() == R.id.take_photo) {
             dispatchTakePictureIntent();
         }
 
 
-    //respond to clicks
+        //respond to clicks
     }
 
     @Override
@@ -240,21 +242,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onStart();
     }
 
-    public void paintClicked(View view){
+    public void paintClicked(View view) {
         //use chosen color
-        if(view!=currPaint){
-            ImageButton imgView = (ImageButton)view;
+        if (view != currPaint) {
+            ImageButton imgView = (ImageButton) view;
             String color = view.getTag().toString();
             drawView.setColor(color);
             imgView.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
             currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
-            currPaint=(ImageButton)view;
+            currPaint = (ImageButton) view;
             drawView.setErase(false);
             drawView.setBrushSize(drawView.getLastBrushSize());
         }
     }
 
-    public void shoot(View view){
+    public void shoot(View view) {
         dispatchTakePictureIntent();
         //dispatchTakePictureIntent(100);
     }
@@ -274,8 +276,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCurrentPhotoPath = image.getPath();
         return image;
     }
-
-
 
 
     private void dispatchTakePictureIntent() {
@@ -302,35 +302,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void galleryAddPic() {
-        //Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        //File f = new File(mCurrentPhotoPath);
-        //Uri contentUri = Uri.fromFile(f);
+
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
+
+        //delivery the pic from camera to canvas
         if (bitmap != null) drawView.startWithNewPic(bitmap);
+
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        String storagePath = insertImage(getContentResolver(), bitmap,imageFileName, null );
+        String storagePath = insertImage(getContentResolver(), bitmap, imageFileName, null);
         //Notification
         if (storagePath == null) {
             Toast.makeText(this, "No pic been added", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "The pic has been save to:" + storagePath, Toast.LENGTH_SHORT).show();
         }
-        else {
-            Toast.makeText(this, storagePath, Toast.LENGTH_SHORT).show();
-        }
-        /*mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
-        sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, contentUri));*/
+
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /*if (data!=null){
-            handleSmallCameraPhoto(data);
-        }*/
+
         galleryAddPic();
-            //Bitmap fullPic = handleFullCameraPhoto(data);
+        //Bitmap fullPic = handleFullCameraPhoto(data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -339,15 +336,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(takePictureIntent, actionCode);
     }
-    private   Bitmap handleSmallCameraPhoto(Intent intent) {
+
+    private Bitmap handleSmallCameraPhoto(Intent intent) {
         Bundle extras = intent.getExtras();
         mImageBitmap = (Bitmap) extras.get("data");
         //mImageView.setImageBitmap(mImageBitmap);
-        return  mImageBitmap;
+        return mImageBitmap;
 
     }
-    public Bitmap toGrayscale(Bitmap bmpOriginal)
-    {
+
+    public Bitmap toGrayscale(Bitmap bmpOriginal) {
         int width, height;
         height = bmpOriginal.getHeight();
         width = bmpOriginal.getWidth();
@@ -395,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Wait until MINI_KIND thumbnail is generated.
                 Bitmap miniThumb = Images.Thumbnails.getThumbnail(cr, id, Images.Thumbnails.MINI_KIND, null);
                 // This is for backward compatibility.
-                storeThumbnail(cr, miniThumb, id, 50F, 50F,Images.Thumbnails.MICRO_KIND);
+                storeThumbnail(cr, miniThumb, id, 50F, 50F, Images.Thumbnails.MICRO_KIND);
             } else {
                 cr.delete(url, null, null);
                 url = null;
@@ -436,10 +434,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 true
         );
         ContentValues values = new ContentValues(4);
-        values.put(Images.Thumbnails.KIND,kind);
-        values.put(Images.Thumbnails.IMAGE_ID,(int)id);
-        values.put(Images.Thumbnails.HEIGHT,thumb.getHeight());
-        values.put(Images.Thumbnails.WIDTH,thumb.getWidth());
+        values.put(Images.Thumbnails.KIND, kind);
+        values.put(Images.Thumbnails.IMAGE_ID, (int) id);
+        values.put(Images.Thumbnails.HEIGHT, thumb.getHeight());
+        values.put(Images.Thumbnails.WIDTH, thumb.getWidth());
 
         Uri url = cr.insert(Images.Thumbnails.EXTERNAL_CONTENT_URI, values);
 
@@ -455,6 +453,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+
+    public void addComment(View view) {
+        AlertDialog.Builder commentDialog = new AlertDialog.Builder(this);
+        commentDialog.setTitle("Add Comment");
+        commentDialog.setMessage("Add Comment:");
+        final EditText input = new EditText(this);
+        commentDialog.setView(input);
+
+
+        commentDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // SHOULD NOW WORK
+                result = input.getText().toString();
+
+                drawView.addCommentToCanavas(result);
+            }
+        });
+        commentDialog.setNegativeButton("CANCEL", null);
+        commentDialog.create().show();
+    }
 
 
 }

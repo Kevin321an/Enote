@@ -65,6 +65,7 @@ public class DrawingView extends View {
     public void startNew(){
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
+
     }
     public void startWithNewPic(Bitmap bMap){
         int heigh = bMap.getHeight();
@@ -72,7 +73,7 @@ public class DrawingView extends View {
         //get the dimension of pic and frame
         Rect po = new Rect(0,0,width,heigh);
         Rect dst = new Rect(0,0,canvasBitmap.getWidth(),canvasBitmap.getHeight());
-        drawCanvas.drawBitmap(bMap,po,dst, canvasPaint);
+        drawCanvas.drawBitmap(bMap, po, dst, canvasPaint);
         invalidate();
 
         //invalidate();
@@ -131,12 +132,24 @@ public class DrawingView extends View {
 
     }
 
+    public void addCommentToCanavas(String str){
+
+        Paint paint = new Paint();
+
+
+        paint.setColor(Color.BLUE);
+        paint.setTextSize(80);
+        drawCanvas.drawText(str, 200, 100, paint);
+    }
+
     public void setErase(boolean isErase){
         erase=isErase;
         if(erase) drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         else drawPaint.setXfermode(null);
         //set erase true or false
     }
+
+
 
 
 }
