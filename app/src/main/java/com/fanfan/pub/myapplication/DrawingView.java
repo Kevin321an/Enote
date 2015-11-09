@@ -10,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -68,10 +69,13 @@ public class DrawingView extends View {
 
     }
     public void startWithNewPic(Bitmap bMap){
-        int heigh = bMap.getHeight();
+
+        if (bMap==null) Log.d("bitmap", "null");
+        int height = bMap.getHeight();
         int width = bMap.getWidth();
         //get the dimension of pic and frame
-        Rect po = new Rect(0,0,width,heigh);
+
+        Rect po = new Rect(0,0,width,height);
         Rect dst = new Rect(0,0,canvasBitmap.getWidth(),canvasBitmap.getHeight());
         drawCanvas.drawBitmap(bMap, po, dst, canvasPaint);
         invalidate();

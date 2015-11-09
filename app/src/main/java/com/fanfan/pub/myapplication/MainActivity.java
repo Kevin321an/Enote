@@ -17,10 +17,12 @@ import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -41,9 +43,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView mImageView;
     private static Bitmap mImageBitmap;
 
-    public static Bitmap getmImageBitmap() {
-        return mImageBitmap;
-    }
 
     String mCurrentPhotoPath;
     static final int REQUEST_TAKE_PHOTO = 1;
@@ -258,7 +257,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void shoot(View view) {
         dispatchTakePictureIntent();
-        //dispatchTakePictureIntent(100);
     }
 
     private File createImageFile() throws IOException {
@@ -305,11 +303,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
+        final Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
 
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                if (bitmap != null) drawView.startWithNewPic(bitmap);
+            }
+        }, 1000);
         //delivery the pic from camera to canvas
-        if (bitmap != null) drawView.startWithNewPic(bitmap);
-
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -466,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         commentDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int whichButton) {
-                // SHOULD NOW WORK
+
                 result = input.getText().toString();
 
                 drawView.addCommentToCanavas(result);
@@ -476,6 +478,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         commentDialog.create().show();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.take_photo:
+                dispatchTakePictureIntent();
+                //Toast.makeText(getApplicationContext(), "PICTURE", Toast.LENGTH_SHORT).show();
+                return true;
+        }
+        return  false;
+    }
 
 }
 
