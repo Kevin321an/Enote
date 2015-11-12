@@ -1,5 +1,6 @@
 package com.fanfan.pub.myapplication;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
@@ -7,6 +8,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -34,6 +36,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -45,7 +48,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     String mCurrentPhotoPath;
+
+    //request ID
     static final int REQUEST_TAKE_PHOTO = 1;
+    static final int PICK_IMAGE =100;
 
     private DrawingView drawView;
     private float smallBrush, mediumBrush, largeBrush;
@@ -234,12 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //respond to clicks
     }
 
-    @Override
-    protected void onStart() {
-      /*  takePhoto = (ImageButton)findViewById((R.id.take_photo));
-        takePhoto.setOnClickListener(this);*/
-        super.onStart();
-    }
+
 
     public void paintClicked(View view) {
         //use chosen color
@@ -298,12 +299,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+    //delivery the pic from camera to canvas
+    public void fentchPic(Bitmap pic){
 
-    private void galleryAddPic() {
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        final Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
+        final Bitmap bitmap = pic;
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -311,7 +310,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (bitmap != null) drawView.startWithNewPic(bitmap);
             }
         }, 1000);
-        //delivery the pic from camera to canvas
+    }
+
+    private void galleryAddPic() {
+        //convert the image file to bitmap
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        final Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
+        fentchPic(bitmap);
+
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -327,8 +334,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //if (resultCode == Activity.RESULT_OK)
 
-        galleryAddPic();
+        switch (requestCode)
+        {
+            case REQUEST_TAKE_PHOTO: galleryAddPic();
+                break;
+            case PICK_IMAGE:
+                //InputStream inputStream = getBaseContext().getContentResolver().openInputStream(data.getData());
+                /*Bundle extras = data.getExtras();
+                mImageBitmap = (Bitmap) extras.get("data");
+                fentchPic(mImageBitmap);*/
+
+                //if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+                Uri selectedImage = data.getData();
+                    String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+                    Cursor cursor = getContentResolver().query(selectedImage,
+                            filePathColumn, null, null, null);
+                cursor.moveToFirst();
+
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    String picturePath = cursor.getString(columnIndex);
+                    cursor.close();
+                    Bitmap b = BitmapFactory.decodeFile(picturePath);
+                    fentchPic(b);
+
+
+
+               // }
+
+                break;
+            default:
+                break;
+        }
+
         //Bitmap fullPic = handleFullCameraPhoto(data);
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -488,6 +528,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
         }
         return  false;
+    }
+
+    //pick pics from gallary
+    public void pickPhotos(View view){
+
+
+        Intent i = new Intent(
+                Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+        startActivityForResult(i, PICK_IMAGE);
+
     }
 
 }
